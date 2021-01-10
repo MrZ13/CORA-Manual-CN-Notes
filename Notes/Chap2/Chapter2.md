@@ -162,7 +162,7 @@ poly = mptPolytope(zono);
 
 ###### n维空间上的zonotope定义
 
-![](\pics\pic2-2.jpg)
+![](pics/pic2-2.jpg)
 
 > c：中心点
 >
@@ -172,7 +172,7 @@ poly = mptPolytope(zono);
 
 ###### CORA中zonotope的声明方式
 
-![](pics\pic2-3.jpg)
+![](pics/pic2-3.jpg)
 
 > G = [g(1),g(2),......g(p)]
 
@@ -186,13 +186,13 @@ poly = mptPolytope(zono);
 
 ###### n维空间上的interval定义
 
-![](E:pics\pic_interval_1.jpg)
+![](pics/pic_interval_1.jpg)
 
 
 
 ###### CORA中interval的声明方式
 
-![](E:pics\pic_interval_2.jpg)
+![](pics/pic_interval_2.jpg)
 
 > 注意，上下界均可以不止一个，以便表示不同维度中的interval
 
@@ -208,7 +208,7 @@ ub = [4; 3];
 int = interval(lb,ub);
 ```
 
-![](E:pics\pic_interval_3.jpg)
+![](pics/pic_interval_3.jpg)
 
 
 
