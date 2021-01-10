@@ -156,11 +156,13 @@ poly = mptPolytope(zono);
 
 #### 2.2.1.1 Zonotopes
 
-> zonotope是一种紧凑的(compact)，用于表示高维空间的表示法。实际上，zonotope可以被看做数个线段的闵可夫斯基加和
+> zonotope是一种紧凑的(compact)，用于表示高维空间中的集合。实际上，zonotope可以被看做数个线段的闵可夫斯基加和。
+>
+> tips：实际上，zonotope可以看作为数个变量的可能取值，通过一个中心点+数个噪声变量的形式表示
 
 
 
-###### n维空间上的zonotope定义
+###### 1.n维空间上的zonotope定义
 
 ![](pics/pic2-2.jpg)
 
@@ -170,7 +172,7 @@ poly = mptPolytope(zono);
 
 
 
-###### CORA中zonotope的声明方式
+###### 2.CORA中zonotope的声明方式
 
 ![](pics/pic2-3.jpg)
 
@@ -178,19 +180,43 @@ poly = mptPolytope(zono);
 
 
 
-#### 2.2.1.2 Intervals
+###### 3.代码示例
+
+```matlab
+% construct zonotope 
+c = [1;1]; 
+G = [1 1 1; 1 -1 0];
+zono = zonotope(c,G);
+```
+
+
+
+###### 4.zonotope的产生过程
+
+> 以3中的定义为例：
+>
+> 1. 以c点作为中心点
+> 2. 向(1,1),(-1,-1)两个方向进行一次移动，得到一条线段
+> 3. 线段上的所有点向(1,-1),(-1,1)两个方向进行一次移动，得到一个正方形
+> 4. 正方形上的所有点向(1,0),(-1,0)两个方向进行一次移动，得到一个六边形
+
+![](pics/pic2-4.jpg)
+
+
+
+#### 2.2.1.2 Intervals（区间）
 
 > interval(区间)，是一个n维空间上的连通子集，使用上下界来进行定义
 
 
 
-###### n维空间上的interval定义
+###### 1.n维空间上的interval定义
 
 ![](pics/pic_interval_1.jpg)
 
 
 
-###### CORA中interval的声明方式
+###### 2.CORA中interval的声明方式
 
 ![](pics/pic_interval_2.jpg)
 
@@ -212,23 +238,54 @@ int = interval(lb,ub);
 
 
 
-#### 2.2.1.3 Ellipsoids
+#### 2.2.1.3 Ellipsoids（椭圆体）
+
+> 椭圆体是一个R<sup>n</sup>维度上的几何学对象，由一个中心q和一个正的、半正定的对称矩阵定义
 
 
 
-#### 2.2.1.4 MPT Polytopes
+###### 1.nxn空间上Ellipsoids的定义
+
+![](pics/pic-ellpi-1.jpg)
+
+![](pics/pic-ellpi-2.jpg)
+
+> 上述两种定义方式等价
 
 
 
-#### 2.2.1.5 Polynomial Zonotopes
+###### 2.CORA中ellipsoids的声明方式
+
+![](pics/pic-ellpi-3.jpg)
+
+###### 3.示例
+
+```matlab
+% construct 
+ellipsoid Q = [13 7; 7 5]; 
+q = [1; 2];
+E = ellipsoid(Q,q);
+```
+
+![](pics/pic-ellpi-4.jpg)
 
 
 
-#### 2.2.1.6 Capsules
+#### 2.2.1.4 MPT Polytopes（MPT多面体）
 
 
 
-#### 2.2.1.7 Zonotope Bundles
+
+
+#### 2.2.1.5 Polynomial Zonotopes（多项的zonotope)
+
+
+
+#### 2.2.1.6 Capsules（胶囊）
+
+
+
+#### 2.2.1.7 Zonotope Bundles (zonotope束)
 
 
 
