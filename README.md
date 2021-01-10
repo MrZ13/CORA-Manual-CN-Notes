@@ -1,4 +1,4 @@
-# CORA-Manual-CN-Version
+# CORA-Manual-CN-Notes
 this is a repo which consists  CORA Manual's notes .
 
 The notes of each chapter are listed as follows:
