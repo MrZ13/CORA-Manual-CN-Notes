@@ -222,7 +222,7 @@ poly = mptPolytope(zono);
 
 
 
-###### 1.n维空间上的zonotope定义
+##### 1.n维空间上的zonotope定义
 
 ![](pics/pic2-2.jpg)
 
@@ -232,7 +232,7 @@ poly = mptPolytope(zono);
 
 
 
-###### 2.CORA中zonotope的声明方式
+##### 2.CORA中zonotope的声明方式
 
 ![](pics/pic2-3.jpg)
 
@@ -240,7 +240,7 @@ poly = mptPolytope(zono);
 
 
 
-###### 3.代码示例
+##### 3.代码示例
 
 ```matlab
 % construct zonotope 
@@ -251,7 +251,7 @@ zono = zonotope(c,G);
 
 
 
-###### 4.zonotope的产生过程
+##### 4.zonotope的产生过程
 
 > 以3中的定义为例：
 >
@@ -270,13 +270,13 @@ zono = zonotope(c,G);
 
 
 
-###### 1.n维空间上的interval定义
+##### 1.n维空间上的interval定义
 
 ![](pics/pic_interval_1.jpg)
 
 
 
-###### 2.CORA中interval的声明方式
+##### 2.CORA中interval的声明方式
 
 ![](pics/pic_interval_2.jpg)
 
@@ -304,7 +304,7 @@ int = interval(lb,ub);
 
 
 
-###### 1.nxn空间上Ellipsoids的定义
+##### 1.nxn空间上Ellipsoids的定义
 
 ![](pics/pic-ellpi-1.jpg)
 
@@ -314,11 +314,11 @@ int = interval(lb,ub);
 
 
 
-###### 2.CORA中ellipsoids的声明方式
+##### 2.CORA中ellipsoids的声明方式
 
 ![](pics/pic-ellpi-3.jpg)
 
-###### 3.示例
+##### 3.示例
 
 ```matlab
 % construct 
@@ -333,19 +333,175 @@ E = ellipsoid(Q,q);
 
 #### 2.2.1.4 MPT Polytopes（MPT多面体）
 
+> 表示多面体的方法有两种：
+>
+> 1. 半空间表示法（H-repre）
+> 2. 顶点表示法（V-repre)
 
+
+
+##### 1.定义
+
+###### 2.2.1.4.1 H-repre
+
+> 半空间表示法通过多个半空间交集的形式表示多面体
+
+多面体P的定义：``H(i): P = H(1) ∩ H(i) ∩ . . . ∩ H(q)``
+
+
+
+==半空间==
+
+> 一个半空间是使用超平面，二等分一个n维的欧几里得空间得到的
+
+超平面的定义：``S := {x|cTx = d}, c ∈ Rn, d ∈ R``
+
+其中
+
+- C:超平面的法向量 
+- d:超平面上任意一点与法向量的纯量积
+
+根据超平面，可得半空间的定义：``H := {x|cTx ≤ d}``
+
+
+
+==凸多面体(convex polytope)的定义==
+
+一个凸的多面体P是q个半空间的有界集合，定义如下：
+
+![](pics/pic_mpt_h1.jpg)
+
+###### 2.2.1.4.2 V-repre
+
+使用顶点表示的凸多面体是一个在欧几里得空间中有限点集构成的凸包，这些点即是凸多面体的顶点，以 `v(i) ∈ Rn`的形式表示
+
+###### 使用顶点表示的凸包(convex hull)
+
+![](pics/pic-mpt-v1.jpg)
+
+
+
+2.2.1.4.1与2.2.1.4.2中提到的两种表示法的图示如下:
+
+![](pics/pic-mpt-1.jpg)
+
+
+
+##### 2.CORA中polytope的定义方式
+
+![](pics/pic-mpt-2.jpg)
+
+> 这两种分别对应着V-repre和H-repre
+
+
+
+##### 3.示例
+
+```matlab
+% construct polytope (halfspace rep.) 
+C = [1 0 -1 0 1; 0 1 0 -1 1]’; 
+d = [3; 2; 3; 2; 1];
+poly = mptPolytope(C,d);
+
+% construct polytope (vertex rep.) 
+V = [-3 -3 -1 3; -2 2 2 -2]; 
+poly = mptPolytope(V’);
+```
+
+![](pics/pic-mpt-3.jpg)
 
 
 
 #### 2.2.1.5 Polynomial Zonotopes（多项的zonotope)
 
+> 多项式Zonotope是一种非凸的集合表示
+
+
+
+##### 1.R<sup>n</sup>空间上多项式Zonotope的定义
+
+![](pics/pic-pzono-1.jpg)
+
+> - c：与zonotope一样，中心点
+> - G：dependent generator   ∈ R<sup>nxh</sup>
+> - Gi：independent generator ∈ R<sup>nxq</sup>
+> - E：指数矩阵 ∈ N<sup>pxh</sup><sub>0</sub>
+
+
+
+tips: 多项Zonotope的特点
+
+- 可以表示非凸集合
+- 在二次和更高的函数运算下都是封闭的
+
+故适合用于可达性分析
+
+
+
+##### 2.CORA中多项式Zonotope的表达方式
+
+![](pics/pic-pzono-2.jpg)
+
+
+
+##### 3.示例
+
+```matlab
+% construct polynomial zonotope 
+c = [4;4]; 
+G = [2 1 2; 0 2 2]; 
+expMat = [1 0 3;0 1 1]; 
+Grest = [1;0];
+pZ = polyZonotope(c,G,Grest,expMat);
+```
+
+![](pics/pic-pzono-3.jpg)
+
 
 
 #### 2.2.1.6 Capsules（胶囊）
 
+> 胶囊被定义为线段集合和球体的闵可夫斯基和
+
+
+
+##### 1.Capsules在R<sup>n</sup>空间上的定义
+
+![](pics/pic-cap-1.jpg)
+
+> - c：中心
+> - g：generator
+> - r：半径
+
+
+
+##### 2.CORA中Capsules的表示
+
+![](pics/pic-cap-2.jpg)
+
+##### 3.示例
+
+```matlab
+% construct capsule 
+c = [1;2]; 
+g = [2;1]; 
+r = 1;
+C = capsule(c,g,r);
+```
+
+![](pics/pic-cap-3.jpg)
+
+> tips：Capsules的计算方式与Zonotope非常类似，同样是计算闵可夫斯基和
+
 
 
 #### 2.2.1.7 Zonotope Bundles (zonotope束)
+
+
+
+
+
+
 
 
 
@@ -357,7 +513,7 @@ E = ellipsoid(Q,q);
 
 
 
-### 2.2.2 Auxiliary Set Representations
+### 2.2.2 Auxiliary(辅助的) Set Representations
 
 #### 2.2.2.1 Constrained Hyperplane
 
