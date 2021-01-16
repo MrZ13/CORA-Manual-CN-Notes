@@ -112,39 +112,210 @@ res = M * S;
 
 ##### 1.定义
 
+对于R<sup>n</sup>的子集S1，S2，它们的plus操作定义如下
 
+![](pics/pic-plus-1.jpg)
 
 
 
 ##### 2.示例
 
+```matlab
+% set S1 and S2 
+S1 = zonotope([0 0.5 1; ... 0 1 0]);
+S2 = zonotope([0 1 0; ... 0 0 1]);
+
+% Minkowski sum
+res = S1 + S2;
+```
+
+![](pics/pic-plus-2.jpg)
+
+> 左图为S1与S2的交集，右图为它们的闵可夫斯基和
 
 
 
+#### 2.1.1.3 cartProd(Cartesian Product 笛卡尔积)
+
+> cartProd实现了两个集合的笛卡尔积操作(即两个集合各个元素两两组合)
 
 
 
-#### 2.1.1.3 cartProd
+##### 1.定义
+
+![](pics/pic-cart-1.jpg)
+
+> S1 $\subset$ R<sup>n</sup>
+>
+> S2 $\subset$ R<sup>w</sup>
 
 
 
-#### 2.1.1.4 convHull
+##### 2.示例
+
+```matlab
+% set S1 and S2 
+S1 = interval(-2,1); 
+S2 = interval(-1,2);
+
+% Cartesian product
+res = cartProd(S1,S2)
+```
+
+![](pics/pic-cart-2.jpg)
+
+
+
+#### 2.1.1.4 convHull(convex hull 凸包)
+
+> convHull实现了两个集合的凸包操作
+>
+> tips:
+>
+> ###### 凸包
+>
+> 凸包（Convex Hull）是一个计算几何（图形学）中的概念。
+>
+> 在一个[实数](https://baike.baidu.com/item/实数/296419)[向量空间](https://baike.baidu.com/item/向量空间/5936597)V中，对于给定集合X，所有包含X的[凸集](https://baike.baidu.com/item/凸集/6105027)的[交集](https://baike.baidu.com/item/交集/5017305)S被称为X的**凸包**。X的凸包可以用X内所有点(X1，...Xn)的[凸组合](https://baike.baidu.com/item/凸组合)来构造.
+>
+> 在二维[欧几里得空间](https://baike.baidu.com/item/欧几里得空间)中，凸包可想象为一条刚好包著所有点的橡皮圈。
+>
+> 用不严谨的话来讲，给定二维平面上的点集，凸包就是将最外层的点连接起来构成的[凸多边形](https://baike.baidu.com/item/凸多边形/6608474)，它能包含点集中所有的点。
+
+
+
+##### 1.定义
+
+对于两个R<sup>n</sup>子集S1，S2，其凸包被定义为
+
+![](pics/pic-convhull-1.jpg)
+
+
+
+##### 2.示例
+
+```matlab
+% set S1 and S2 
+S1 = conZonotope([1.5 1 0; ... 1.5 0 1]);
+S2 = conZonotope([-1.5 1 0; ... -1.5 0 1]);
+
+% convex hull
+res = convHull(S1,S2);
+```
+
+![](pics/pic-convhull-2.jpg)
 
 
 
 #### 2.1.1.5 quadMap
 
+> quadMap方法实现了一个集合的二次函数
+
+
+
+##### 1.定义
+
+对于R<sup>n</sup>的子集S1，其二次函数定义为
+
+![](pics/pic-quadmap-1.jpg)
+
+> s：进行计算的集合
+>
+> Q：计算时需要提供的矩阵
+
+
+
+当提供两个集合进行运算时，计算的就是两个集合混合的二次函数，定义如下
+
+![](pics/pic-quadmap-2.jpg)
+
+
+
+##### 2.示例
+
+```matlab
+% set and matrices 
+S = polyZonotope([0;0], ... [1 1;1 0], ... [],eye(2));
+Q{1} = [0.5 0.5; 0 -0.5];
+Q{2} = [-1 0; 1 1];
+
+% quadratic map
+res = quadMap(S,Q);
+```
+
+![](pics/pic-quadmap-3.jpg)
+
 
 
 #### 2.1.1.6 and
+
+> and方法重载了”&“运算符，计算两个集合的交集
+
+
+
+##### 1.定义
+
+![](pics/pic-and-1.jpg)
+
+
+
+##### 2.示例
+
+```matlab
+% set S1 and S2 
+S1 = interval([-1;-1],[2;2]);
+S2 = interval([-2;-2],[1;1]);
+
+% intersection
+res = S1 & S2;
+```
+
+![](pics/pic-and-2.jpg)
 
 
 
 #### 2.1.1.7 or
 
+> or方法重载了”|“运算符，表示两个集合的并集运算
 
 
-### 2.1.2 Predicates
+
+##### 1.定义
+
+![](pics/pic-or-1.jpg)
+
+##### 2.示例
+
+```matlab
+% set S1 and S2 
+S1 = interval([-2;-1],[2;2]); 
+S2 = interval([-2;-2],[2;1]);
+
+% union
+res = S1 | S2;
+```
+
+
+
+
+
+不同集合表示的集合运算，采取的精度如下
+
+e：exact computation
+
+o：over-approximation
+
+![](pics/pic-setOperationTable.jpg)
+
+
+
+
+
+### 2.1.2 Predicates(谓词运算)
+
+> 谓词运算检查一个集合是否满足特定的要求，返回0或1
+
+
 
 #### 2.1.2.1 in
 
@@ -621,6 +792,50 @@ cZ = conZonotope(c,G,A,b);
 
 
 #### 2.2.1.9 Probabilistic Zonotopes
+
+概率zonotope被用于随机验证。ProbabilisticZ的结构与zonotope一致，不同点是，其部分$\beta i$的值是[-1,1]的(与zonotope相同)，而另一个部分符合正态分布。
+
+
+
+##### 1.定义
+
+（1）Gaussian Zonotope
+
+![](pics/pic-prozono-1.jpg)
+
+> - $\mu$：期望值
+> - $\Sigma$：协方差矩阵
+> - N($\mu$,$\Sigma$)：成对独立的高斯分布随机变量
+
+（2） Z(花体)
+
+![](pics/pic-prozono-2.jpg)
+
+> 这种写法的Z表示一个中心点不确定的Gaussian Zonotope，其中心点可以为Zonotope Z(普通写法)中的任意一值，即Probabilistic Zonotope
+
+
+
+##### 2.CORA中Probabilistic Zonotopes的表示
+
+![](pics/pic-prozono-3.jpg)
+
+> Z：`Z = [c, g(1), . . . , g(p)]` 普通的zonotope
+>
+> G：`G = [g_(1), . . . , g_(q)]` 高斯zonotope的generator
+
+
+
+##### 3.示例
+
+```matlab
+% construct probabilistic zonotope 
+c = [0;0]; 
+G = [1 0;0 1]; 
+G_ = [3 2; 3 -2];
+pZ = probZonotope([c,G],G_);
+```
+
+![](pics/pic-prozono-4.jpg)
 
 
 
