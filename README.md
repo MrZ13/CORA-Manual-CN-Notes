@@ -12,3 +12,7 @@ The notes of each chapter are listed as follows:
 [Chapter5 Abstraction to Discrete Systems](https://github.com/MrZ13/CORA-Manual-CN-Version/blob/main/Notes/Chap5/Chapter5.md)
 
 [Chapter6 Additional Functionality](https://github.com/MrZ13/CORA-Manual-CN-Version/blob/main/Notes/Chap6/Chapter6.md)
+
+
+
+The CORA Manual is also presented in this repo.

@@ -63,16 +63,64 @@
       - [2.2.3.2 Affine](#2232-affine)
       - [2.2.3.3 Zoo](#2233-zoo)
 
-
 ## 2.1 Set Operations
+
+> CORA中实现的可达性算法依赖基于集合的计算。一个重要的设计原则是，对于不同的集合表示方法，基本的集合操作是一致的，这样能够保证可达性算法可以适用于不同的集合表示法。
+
+
 
 ### 2.1.1 Basic Set Operations
 
+2.1.1中介绍基本的集合操作
+
+
+
 #### 2.1.1.1 mtimes
+
+mtimes重载了"*"操作，实现了集合的线性映射
+
+
+
+##### 1.定义
+
+对于R<sup>n</sup>上的集合S，mtimes的定义如下：
+
+![](pics/pic-mtimes-1.jpg)
+
+
+
+##### 2.示例
+
+```matlab
+% set and matrix 
+S = zonotope([0 1 1 0; ... 0 1 0 1]);
+M = [1 0; -1 0.5];
+
+% linear transformation
+res = M * S;
+```
+
+![](pics/pic-mtimes-2.jpg)
 
 
 
 #### 2.1.1.2 plus
+
+> plus重载了"+"操作，实现了两个集合的闵可夫斯基和，注意不是plus操作不等于"and"
+
+
+
+##### 1.定义
+
+
+
+
+
+##### 2.示例
+
+
+
+
 
 
 
@@ -497,15 +545,78 @@ C = capsule(c,g,r);
 
 #### 2.2.1.7 Zonotope Bundles (zonotope束)
 
+> 由于在交集运算中zonotope不是封闭的，即两个zonotope的交集结果可能不是一个zonotope，因此引入了zonotope束的概念，即以集合的形式表示多个zonotope
 
 
 
+##### 1.Zonotope Bundles在n维空间上的定义
+
+![](pics/pic-zb-1.jpg)
+
+> 注意虽然使用了交集的符号，但是zb不会计算交集，而是以list的形式存储zonotope，即`ZB = {Z1, . . . , Zs}`
 
 
+
+##### 2.CORA中ZB的示例
+
+![](pics/pic-zb-2.jpg)
+
+##### 3.示例
+
+```matlab
+% construct zonotopes 
+zono1 = zonotope([1 3 0; 1 0 2]); 
+zono2 = zonotope([0 2 2; 0 2 -2]);
+
+% construct zonotope bundle 
+list = {zono1,zono2};
+zB = zonoBundle(list);
+```
+
+![](pics/pic-zb-3.jpg)
 
 
 
 #### 2.2.1.8 Constrained Zonotopes
+
+> Constrained Zonotopes是一种特殊的zonotope，对参数$\beta i$有额外的限制
+
+
+
+##### 1.Constrained Zonotopes的定义
+
+![](pics/pic-cz-1.jpg)
+
+> - C∈R<sup>n</sup> : 中心点  
+> - G∈R<sup>nxp</sup> ：generator矩阵
+> - $\beta$∈R<sup>p</sup> ：zonotope的参数(fatcors)
+> - A∈R<sup>qxp</sup> ：矩阵
+> - b∈R<sup>q</sup> ：向量，与A一起构成对Zonotope的限制
+
+
+
+- 注意到，增加了额外限制的Zonotope可以用于表示任意的polytope，因此其应用范围比标准的zonotope更加广泛
+- 此外，Czonotope比polytope的优势在于，其继承了zonotope对状态空间维度的扩展特性（原因是CZ和Z一样，都是使用generator来表示集合）
+
+
+
+##### 2.CORA中Constrained Zonotopes的表示
+
+![](pics/pic-cz-2.jpg)
+
+##### 3.示例
+
+```matlab
+% construct constrained zonotope 
+c = [0;0]; 
+G = [1 0 1; 1 2 -1]; 
+A = [-2 1 -1]; b = 2;
+cZ = conZonotope(c,G,A,b);
+```
+
+![](pics/pic-cz-3.jpg)
+
+> tips:左图为Zonotope与CZ的对比，右图为zonotope上的等式限制的可视化
 
 
 
@@ -515,16 +626,34 @@ C = capsule(c,g,r);
 
 ### 2.2.2 Auxiliary(辅助的) Set Representations
 
+> 此部分中介绍的集合表示主要用于混合系统中的guard sets
+
+
+
 #### 2.2.2.1 Constrained Hyperplane
+
+
 
 #### 2.2.2.2 Halfspace
 
+
+
 #### 2.2.2.3 Level Sets
+
+
 
 ### 2.2.3 Set Representations for Range Bounding
 
+
+
+
+
 #### 2.2.3.1 Taylor Models
 
-#### 2.2.3.2 Affine
+
+
+#### 2.2.3.2 Affine（仿射）
+
+
 
 #### 2.2.3.3 Zoo
