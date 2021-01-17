@@ -319,43 +319,283 @@ o：over-approximation
 
 #### 2.1.2.1 in
 
+> in方法检查一个集合是否被另一个集合包含
+
+
+
+##### 1.定义
+
+对于R<sup>n</sup>的子集S1，S2，in方法的定义如下
+
+![](pics/pic-in-1.jpg)
+
+- 除了判断两个集合之间的关系，in运算还可以被用于判断一个点是否在某个集合中。
+
+- 由于精确的in计算可能会导致较大的开销，因此可以使用近似计算来减少某些情况下的开销，即如果比S2更大的集合都能确定在S1中，S2也必然在S1中，这种情况需要说明"approx"
+
+  `in(S1,S2,'approx')`
+
+
+
+##### 2.示例
+
+```matlab
+% sets S1,S2, and point p 
+S1 = zonotope([0 1 1 0; ... 0 1 0 1]);
+S2 = interval([-1;-1],[1;1]); 
+p = [0.5;0.5];
+
+% containment check res1 = in(S1,S2)
+res2 = in(S1,p)
+```
+
+![](pics/pic-in-2.jpg)
+
+tips:不同集合之间可以进行的in运算如下：
+
+(行：S2 ； 列：S1)
+
+![](pics/pic-in-3.jpg)
+
 
 
 #### 2.1.2.2 isIntersecting
+
+> isIntersecting方法检查两个集合是否相交
+
+
+
+##### 1.定义
+
+对于R<sup>n</sup>的子集S1，S2，isIntersecting方法的定义如下，其返回值为0或1
+
+![](pics/pic-isInter-1.jpg)
+
+与in类似，isIntersecting也提供近似运算
+
+`isIntersecting(S1,S2,'approx');`
+
+
+
+##### 2.示例
+
+```matlab
+% sets S1 and S2 
+S1 = interval([-1;-1],[2;2]); 
+S2 = interval([-2;-2],[1;1]);
+
+% intersection check
+res = isIntersecting(S1,S2)
+```
+
+![](pics/pic-isInter-2.jpg)
+
+tips：不同集合之间可以进行的运算如下(与in的表格格式一致)
+
+![](pics/pic-isInter-3.jpg)
+
+
 
 
 
 #### 2.1.2.3 isFullDim
 
+> isFullDim操作检查一个集合是否是full-dimensional的，返回值为0或1
+
+
+
+1.定义
+
+
+
+![](pics/pic-isFullDim-1.jpg)
+
+> $\beta$是unit ball，其定义为：`B = {x | ||x||2 ≤ 1}`
+
+
+
+2.示例
+
+```matlab
+% sets S1 and S2 
+S1 = zonotope([1 2 1;3 1 2]); 
+S2 = zonotope([1 2 1;3 4 2]);
+
+% check if full-dimensional 
+res = isFullDim(S1)
+res = isFullDim(S2)
+```
+
 
 
 #### 2.1.2.4 isequal
+
+> isequal方法检查两个集合是否是相等的
+
+
+
+##### 1.定义
+
+![](pics/pic-isequal-1.jpg)
+
+##### 2.示例
+
+```matlab
+% sets S1 and S2 
+S1 = zonotope([0 1 1 0; ... 0 1 0 1]);
+S2 = zonotope([0 1 1 0; ... 0 1 0 1]);
+
+% equality check
+res = isequal(S1,S2)
+```
 
 
 
 #### 2.1.2.5 isempty
 
+> isempty方法检查一个集合是否为空
+
+
+
+##### 1.定义
+
+![](pics/isempty-1.jpg)
+
+
+
+##### 2.示例
+
+```matlab
+% set S (intersection) 
+S1 = mptPolytope(... [-1 -1;0 -1;0 1;1 1], ... [-0.5; 0; 2; 2.5]);
+S2 = mptPolytope(... [-1 -1;0 -1;0 1;1 1], ... [2.5; 2; 0; -0.5]);
+S = S1 & S2;
+
+% check if set is empty
+res = isempty(S)
+```
+
 
 
 ### 2.1.3 Set Properties
 
+> 此部分介绍计算集合的几何属性的方法（如中心、维度、范数等）
+
+
+
 #### 2.1.3.1 center
+
+> center方法返回集合的中心点
+
+
+
+##### 1.示例
+
+```matlab
+% set S 
+S = interval([-2;-2],[1;1]);
+
+% compute center
+res = center(S)
+```
+
+![](pics/center-1.jpg)
 
 
 
 #### 2.1.3.2 dim
 
+> dim方法返回集合的维度
+
+```matlab
+% set S 
+S = zonotope([0 1 0 2; ... 3 1 1 0; ... 1 1 0 1]);
+
+% dimension of the set
+res = dim(S)
+```
+
+结果：res = 3
+
 
 
 #### 2.1.3.3 norm
+
+> norm方法返回集合中点的最大向量范数值
+
+
+
+##### 1.定义
+
+![](pics/norm-1.jpg)
+
+> p：决定使用哪一范数，如p=2时，表示使用向量的二范数
+
+![](pics/norm-2.jpg)
+
+
+
+##### 2.示例
+
+```matlab
+% set S 
+S = zonotope([-0.5 1.5 0; ... -0.5 0 1.5]);
+
+% norm of the set
+res = norm(S,2)
+```
+
+![](pics/norm-3.jpg)
 
 
 
 #### 2.1.3.4 vertices
 
+> vertices方法会返回一个集合的所有顶点
 
 
-#### 2.1.3.5 volume
+
+##### 1.定义
+
+`[v1, . . . , vq] = vertices(S)`
+
+
+
+##### 2.示例
+
+```matlab
+% set S 
+S = interval([-2;-2], ... [1;1]);
+
+% compute vertices
+V = vertices(S)
+
+%print result
+disp(V)
+```
+
+![](pics/vertices-1.jpg)
+
+#### 2.1.3.5 volume(体积)
+
+> volume方法返回集合的体积
+>
+> （对于二维空间中的集合，即体现为面积）
+
+
+
+##### 1.示例
+
+```matlab
+% set S 
+S = zonotope([0 1 1 0; ... 0 1 0 1]);
+% volume of the set
+res = volume(S)
+```
+
+![](pics/volume-1.jpg)
+
+
 
 
 
