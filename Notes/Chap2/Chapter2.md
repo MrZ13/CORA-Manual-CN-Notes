@@ -603,37 +603,273 @@ res = volume(S)
 
 #### 2.1.4.1 cubMap
 
+> cubMap方法实现了集合的三次函数，可以理解为该集合进行了三次运算：
+>
+> 集合体现为一个向量0
+>
+> 1. 转置的向量0<sup>T</sup>和矩阵相乘，得到一个向量1
+> 2. 向量1和未转置的向量0相乘，得到一个数值
+> 3. 用向量0的各个位置上的值和数值相乘，得到最终结果
+>
+> Tips:如果输入了三个不同的集合，即代表三个位置上的向量是不同的集合
+
+
+
+##### 1.定义
+
+###### (1)一个集合
+
+![](pics/cupMap-1.jpg)
+
+###### (2)三个集合
+
+![](pics/cupMap-2.jpg)
+
+##### 2.示例
+
+```matlab
+% set and matrices 
+S = polyZonotope([0;0], ... [1 1;1 0], ... [],eye(2));
+
+T{1,1} = 0.4*[1 2; -1 2]; 
+T{1,2} = 0.4*[-3 0; 1 1]; 
+T{2,1} = 0.05*[2 0; -2 1]; 
+T{2,2} = 0.05*[-3 0; -21 -1];
+
+% cubic map
+res = cubMap(S,T);
+```
+
+![](pics/cupMap-3.jpg)
+
 
 
 #### 2.1.4.2 enclose
+
+> enclose操作计算一个集合的enclosure和它的线性变换。
+
+
+
+##### 1.定义
+
+给定R<sup>n</sup>上的两个集合S1，S2，以及mXn的矩阵M，其enclose的定义如下
+
+![](pics/enclose-1.jpg)
+
+
+
+enclose方法也支持传入两个集合，不传入矩阵，这种情况下，矩阵3就被视为是计算的中间结果
+
+![](pics/enclose-2.jpg)
+
+
+
+##### 2.示例
+
+```matlab
+% sets S1,S2 and matrix M 
+S1 = polyZonotope([1.5;1.5], ... [1 0;0 1], ... [],eye(2));
+S2 = [0.5;0.5]; 
+M = [-1 0;0 -1];
+
+% apply method enclose S3 = M*S1 + S2;
+res = enclose(S1,M,S2);
+res = enclose(S1,S3);
+```
+
+![](pics/enclose-3.jpg)
 
 
 
 #### 2.1.4.3 enclosePoints
 
+> enclosePoints计算的是，能够包括点云的尽可能小的集合
+
+
+
+##### 1.定义
+
+给定一个点云P = [p1, . . . , pm], pi ∈ R<sup>n</sup>,enclosePoints方法定义如下
+
+![](pics/enclosePoint-1.jpg)
+
+
+
+##### 2.示例
+
+```matlab
+% random point cloud 
+mu = [0 0]; 
+sigma = [0.3 0.4; 0.4 1]; 
+points = mvnrnd(mu,sigma,100)’;
+
+% compute enclosing set
+S = ellipsoid.enclosePoints(points);
+```
+
+![](pics/enclosePoint-2.jpg)
+
 
 
 #### 2.1.4.4 generateRandom
 
+> generateRandom方法根据输入的参数生成一个随机的集合
 
+![](pics/generateRan-1.jpg)
+
+
+
+##### 1.示例
+
+```matlab
+% generate random set 
+S = interval.generateRandom(2)
+```
+
+![](pics/generateRan-2.jpg)
 
 #### 2.1.4.5 randPoint
+
+> randPoint方法返回集合中的一个随机点
+>
+> p = randPoint(S), p ∈ S.
+
+
+
+##### 1.示例
+
+```matlab
+% set S 
+S = zonotope([0 1 1 0; ... 0 1 0 1]);
+
+% random point
+p = randPoint(S)
+```
+
+![](pics/randPoint-1.jpg)
 
 
 
 #### 2.1.4.6 reduce
 
+> reduce方法被用于将一个集合缩小为一个更小的集合
+
+
+
+##### 1.定义
+
+对于R<sup>n</sup>上的集合S，其reduce方法的定义如下
+
+![](pics/reduce-1.jpg)
+
+> - method：应用在集合S上的压缩算法
+> - order：对结果集合S_的大小的一种预计值
+
+
+
+##### 2.示例
+
+```matlab
+% set S 
+S = zonotope([0 1 1 0; ... 0 1 0 1]);
+
+% reduce rep. size
+S_ = reduce(S,’pca’,1);
+```
+
+![](pics/reduce-2.jpg)
+
+
+
+##### Tips：
+
+> 对于Zonotope这种集合，可以应用的压缩方法如下
+>
+> ![](pics/reduce-3.jpg)
+
+
+
 
 
 #### 2.1.4.7 supportFunc
 
+> supportFunc方法计算集合在某一方向上的support function
 
+
+
+##### 1.定义
+
+给定集合S∈R<sup>n</sup>，向量l∈R<sup>n</sup>，其support function被定义为
+
+![](pics/supportFunc-1.jpg)
+
+此方法同时也支持对下界的计算，可以通过传入一个参数’lower‘实现
+
+![](pics/supportFunc-2.jpg)
+
+
+
+##### 2.示例
+
+```matlab
+% set S and vector l 
+S = zonotope([0 1 1 0; ... 0 1 0 1]);
+l = [1;2];
+
+% compute support function
+res = supportFunc(S,l)
+```
+
+![](pics/supportFunc-3.jpg)
 
 #### 2.1.4.8 plot
 
+> plot可以将一个集合进行2维的边界的投影
+
+对于一个R<sup>n</sup>的子集S，plot支持以下的语法
+
+```matlab
+han = plot(S) 
+han = plot(S, dim) 
+han = plot(S, dim, linespec),
+han = plot(S, dim, namevaluepairs)
+```
+
+han是matlab中图形对象的一个规划好的句柄，其余的参数意义如下：
+
+- S：集合
+- dim：一个整数向量，∈N<sup>2</sup> ,用于指出选择哪两个维度进行投影。比如，默认值为[1,2]
+- linespec：可选项，线段规格说明
+- namevaluepairs：可选项，用于进行更多的属性设置，比如”’LineWidth‘，2 “ ，用于说明线段的宽度
+
+##### 1.示例
+```matlab
+% set S 
+S = zonotope([0 1 1 0; ... 0 1 2 1; ... 0 1 0 1]);
+% visualization
+plot(S,[1,3],’r’);
+```
+![](pics/plot-1.jpg)
 
 
 #### 2.1.4.9 project
+> project方法被用于将一个集合S投影到一个更低维度的、轴对称的子空间
+
+##### 1.定义
+对于一个R<sup>n</sup>的子集S，以及一个表示子空间的指数dim的向量，project方法的定义如下
+![](pics/project-1.jpg)
+其中S<sub>(i)<sub>表示vector s的第i项
+
+##### 2.示例
+```matlab
+% set S 
+S = interval([1;2;5;0], ... [3;3;7;2]);
+% projection
+res = project(S,[1 3 4]);
+```
+![](pics/project-2.jpg)
+
+> 此处可以发现，project方法在此处即体现为将第1、3、4维度的值抽取出来
 
 
 
