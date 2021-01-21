@@ -1323,13 +1323,118 @@ pZ = probZonotope([c,G],G_);
 
 #### 2.2.2.1 Constrained Hyperplane
 
+> 限制超平面即指有额外不等式限制的超平面
+
+
+
+##### 1.定义
+
+R<sup>n</sup>的子集限制超平面CH的数学定义如下
+
+![](pics/CH-1.JPG)
+
+
+
+CH在CORA中使用conHyperplane类来表示
+
+```
+CH = conHyperplane(c, d) 
+CH = conHyperplane(c, d, A, b)
+```
+
+注意，如果不提供矩阵A和向量b，则会构造一个常规的超平面
+
+
+
+##### 2.示例
+
+```matlab
+% construct constrained hyperplane 
+c = [1 1];
+d = 1;
+A = [0 1];
+b = 1;
+ch = conHyperplane(c,d,A,b);
+```
+
+![](pics/CH-2.JPG)
+
 
 
 #### 2.2.2.2 Halfspace
 
+##### 1.定义
+
+R<sup>n</sup>的子集半平面HS的定义如下
+
+![](pics/HS-1.jpg)
+
+
+
+CORA中使用halfspace类来表示半空间
+
+```
+HS = halfspace(c, d)
+```
+
+
+
+##### 2.示例
+
+```matlab
+% construct halfspace 
+c = [1 1]; 
+d = 1;
+hs = halfspace(c,d);
+```
+
+![](pics/HS-2.jpg)
+
 
 
 #### 2.2.2.3 Level Sets
+
+##### 1.定义
+
+R<sup>n</sup>的子集非线性Level Set的定义如下(三种不同的Level Sets的表示方法)
+
+> - LS = {x | f(x) = 0} 
+> - LS = {x | f(x) < 0} 
+> - LS = {x | f(x) ≤ 0}
+>
+> 函数f为一个满足李普希兹连续条件的函数
+>
+> 
+>
+> Tips:李普希兹连续的定义：
+>
+> <img src="pics/Lips.jpg" style="zoom: 200%;" />
+
+
+
+CORA中使用levelSet类来表示Level Sets
+
+```
+LS = levelSet(f(·), vars,op)
+```
+
+> - f：李普希兹连续的函数
+> - vars：一个包含了f的符号变量的向量
+> - op：集合{’==’,’<’,’<=’}中的某一元素，定义Level Set的类型
+
+
+
+##### 2.示例
+
+```matlab
+% construct level set 
+vars = sym(’x’,[2,1]); 
+f = 1/vars(1)ˆ2 - vars(2); 
+op =’==’;
+ls = levelSet(f,vars,op);
+```
+
+![](pics/LevelSet.jpg)
 
 
 
