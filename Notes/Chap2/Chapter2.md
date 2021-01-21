@@ -1440,11 +1440,79 @@ ls = levelSet(f,vars,op);
 
 ### 2.2.3 Set Representations for Range Bounding
 
+> 对于常见的非线性函数，一般来说，给定一个x的取值区间时，确定其最小值和最大值的值都是不现实甚至不可能的。因此，一般会选择使用范围边界(range bounding)来对两种极值进行比较准确的估计。
+
+##### 1.定义
+> 给定一个非线性函数f : R<sup>n</sup> → R，值域D ⊂ R<sup>n</sup> ，其对应的范围边界操作B定义如下
+![](pics/rangeBounding-1.jpg)
+> 范围边界操作B的实现有多种方法，最简单的就是区间算数平均数(interval arithmetic)
+> 然而，使用这种方法虽然速度快，但往往导致比较保守的估计结果，因此不够精确
+> 除了这种方法之外，还可以使用泰勒模型(Taylor Model,即泰勒展开)，仿射(Affine)，以及zoo等其他的方法来实现范围边界操作
 
 
-
+##### 2.示例
+```matlab
+% function f(x) 此方法就是一个非线性方法
+f = @(x) sin(x(1))*x(2) + x(1)ˆ2;
+% domain D for x 
+D = interval([-1;0],[2;1]);
+% compute bounds
+res = f(D)
+```
+结果：res = [-0.84147,5.00000]
 
 #### 2.2.3.1 Taylor Models
+> 泰勒方法往往能够获得比区间算数平均数更精确的边界值
+
+##### 1.定义
+T(x) = {p(x) + y | y ∈ I}
+> - p：Rp → Rn，是一个多项式函数
+> -  I：I ⊂ Rn，是一个区间
+
+为了使用泰勒方法计算一个非线性函数的边界，需要计算泰勒展开式的值
+![](pics/taylor-1.jpg)
+
+CORA中，泰勒模型的使用方式如下
+```
+T(x) = taylm(D) 
+T(x) = taylm(D, order, name, optMethod, tolerance, eps),
+```
+> D：x的取值范围，必选项
+> maxOrder：最高阶数。如果实际值高于此项，则将enclosed，并加入到interval remainder中
+> name：定义变量名称的参数
+> optMethod：用于计算泰勒模型对象的边界的方法。
+> 可选项：
+>
+> - int：区间算数平均数，默认方法
+>
+> - bnb：分支与边界算法
+>
+> - bnbAdv：使用泰勒模型再展开的分支与边界算法
+>
+> - linQuad：使用线性主导边界和二次快速边界的优化算法
+>
+>  tolerance：泰勒多项式中的单项系数的最小值。如果实际值低于最小值，则将enclosed，并加入到interval remainder中
+>   eps：bnb和linQuad算法需要使用的终止宽容度(Termination tolerance ǫ)
+
+
+##### 2.示例
+以f(x) = cos(x)为例，说明使用二阶泰勒方法在x=0处进行计算的过程
+a.计算f(x)在0处的二阶泰勒展开公式
+![](pics/taylor-2.jpg)
+b.绘出图像
+![](pics/taylor-3.jpg)
+
+```matlab
+% function f(x) 
+f = @(x) sin(x(1))*x(2) + x(1)ˆ2;
+% create Taylor model 
+D = interval([-1;0],[2;1]); 
+tay = taylm(D,10,’x’,’linQuad’);
+% compute bounds
+res = interval(f(tay))
+```
+结果：res = [-0.23256,4.90940]
+
 
 
 
@@ -1452,4 +1520,50 @@ ls = levelSet(f,vars,op);
 
 
 
+##### 1.定义
+
+
+
+
+
+##### 2.示例
+
+```matlab
+% function f(x) 
+f = @(x) sin(x(1)).*x(2) + x(1)ˆ2;
+% create affine object 
+D = interval([-1;0],[2;1]);
+aff = affine(D);
+% compute bounds
+res = interval(f(aff))
+```
+
+结果：res = [-3.69137,6.74245]
+
+
+
 #### 2.2.3.3 Zoo
+
+
+
+##### 1.定义
+
+
+
+
+
+##### 2.示例
+
+```matlab
+% function f(x) 
+f = @(x) sin(x(1)).*x(2) + x(1)ˆ2;
+
+% create zoo object 
+D = interval([-1;0],[2;1]); methods = {’interval’,’taylm(linQuad)’};
+Z = zoo(D,methods);
+
+% compute bounds
+res = interval(f(Z))
+```
+
+结果：res = [-0.23983,4.92298]
