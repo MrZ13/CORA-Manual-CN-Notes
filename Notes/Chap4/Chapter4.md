@@ -449,7 +449,7 @@ sys = linearSys(A,B,[],C);
 
 
 
-对于线性系统可达性分析的设置可以通过以下几项来实现
+对于线性系统可达性分析的设置可以通过Option结构的以下几项来实现
 
 - .linAlg：指定使用哪种可达性算法，默认值是"standard"
 
@@ -477,23 +477,230 @@ sys = linearSys(A,B,[],C);
 
 ### 4.2.2 Linear Systems with Uncertain Parameters 
 
+此类继承了线性系统类，并增添了不确定参数的表示。此类有两种不同的实现，一种实现支持固定的不确定参数；另一种实现可以随着时间任意变化的不确定参数。
+
+##### 1.固定参数的线性参数系统定义为(**1,2两种表示方式等价**)：
+
+（1）
+
+![](pics/UncertainLinearSys1.jpg)
+
+（2）
+
+![](pics/UncertainLinearSys2.jpg)
+
+> x(t)∈R<sup>n</sup>,代表系统的状态
+>
+> u(t)∈R<sup>m</sup>，代表系统的输入
+>
+> p∈R<sup>p</sup>，为参数向量
+>
+> P(大写)  ⊂ R<sup>p</sup>，参数的集合
+
+
+
+##### 2.参数变化的线性参数系统定义如下
+
+![](pics/UncertainLinearSys3.jpg)
+
+> t为时间，会不断变化
+
+
+
+CORA中，使用linParamSys类实现了线性系统
+
+```
+sys = linParamSys(A, B) 
+sys = linParamSys(A, B, type) 
+sys = linParamSys(name,A, B)
+sys = linParamSys(name,A, B, type)
+```
+
+> name：系统的名称
+>
+> A,B：在上文中已写出了定义，注意A,B这两个矩阵集合可以使用Sec3中介绍的任意一种矩阵集合表示
+>
+> type：表明参数是否随时间变化
+>
+> - constParam：不随时间变化，默认值
+> - varParam：随时间变化
+
+
+
+##### 实例
+
+```matlab
+% system matrices 
+Ac = [-2 0; 1.5 -3]; 
+Aw = [0 0; 0.5 0]; 
+A = intervalMatrix(Ac,Aw);
+
+B = [1; 1];
+
+% linear parametric system
+sys = linParamSys(A,B,’varParam’);
+```
+
+![](pics/UncertainLinearSys4.jpg)
+
+
+
 #### 4.2.2.1 Operation reach
+
+线性参数系统的可达性分析和已知参数的线性系统是很相似的，其主要的区别为是否需要考虑不确定的状态矩阵A和不确定的输入矩阵B。
+
+
+
+对于参数不确定的线性系统可达性分析的设置可以通过Option结构的以下几项来实现：
+
+- .timeStep：时间步长，除了"adpt"外的其余所有算法都需要指定此项
+- .taylorTerms：矩阵指数e<sup>A∆t</sup>的计算中，泰勒项的个数，除了"adpt"外的其余所有算法都需要指定此项
+- .zonotopeOrder：zonotope阶数$\rho$的上界，除了"adpt"外的其余所有算法都需要指定此项
+- .reductionTechnique：指定减小zonotope阶数$\rho$的方法的项，默认值为"girard"
+- .intermediateOrder：此算法的internal计算部分，zonotope阶数$\rho$的上界
+- .compTimePoint：指出可达集合是否需要被在时间点上计算的flag
 
 
 
 ### 4.2.3 Linear Discrete-Time Systems
 
+除了连续时间的线性系统，CORA同样也支持离散时间的线性系统，其定义如下
+
+![](pics/linearSysDT1.jpg)
+
+> x[t]∈R<sup>n</sup>，代表系统的状态
+>
+> u[t]∈R<sup>m</sup>，代表系统的输入
+>
+> y[t]∈R<sup>p</sup>，代表系统的输出
+>
+> A∈R<sup>nxn</sup>，B∈R<sup>nxm</sup>，c∈R<sup>n</sup>
+>
+> C∈R<sup>pxn</sup>，D∈R<sup>pxm</sup>，k∈R<sup>p</sup>
+>
+
+
+
+在CORA中，线性离散时间系统使用linearSysDT类实现，其构造方式可以是如下几种
+
+```
+sys = linearSysDT(A, B,∆t) 
+sys = linearSysDT(A, B, c, C,D, k,∆t) 
+sys = linearSysDT(name, A, B,∆t)
+sys = linearSysDT(name, A, B, c, C,D, k,∆t)
+```
+
+> name：系统的名称
+>
+> Δt：采样时间间隔，即 x[i + 1] 与 x[i] 之间间隔的时间
+
+
+
+##### 示例
+
+```matlab
+% system matrices 
+A = [-0.4 0.6; 0.6 -0.4]; 
+B = [0; 1];
+C = [1 0];
+
+% sampling time 
+dt = 0.4;
+
+% linear discrete-time system
+sys = linearSysDT(A,B,[],C,dt);
+```
+
+![](pics/linearSysDT2.jpg)
+
+
+
 #### 4.2.3.1 Operation reach
+
+线性离散时间系统的可达集合，可以通过基于集合的评估来计算。随着time step的迭代，zonotope的阶数会逐渐减小到理想值。
+
+对于线性离散时间的可达性分析可以通过Option结构的以下几项设置来实现
+
+- .zonotopeOrder：zonotope阶数ρ的上界
+- .reductionTechnique：指定减小zonotope阶数$\rho$的方法的项，默认值为"girard"
 
 
 
 ### 4.2.4 Linear Probabilistic Systems
 
+ 与其他所有的系统不同，线性概率系统考虑随机的属性。此系统使用线性随机微分等式(Stochastic Differential Equation SDE)定义，也可称为多元Ornstein-Uhlenbeck过程
+
+![](pics/linProbSys1.jpg)
+
+> A、C：系数矩阵，且A需要是满秩矩阵(能够保证方程有唯一解)
+>
+> 输入
+>
+> - u：第一项输入，满足李普希兹连续，且其取值范围在U中，没有概率分布
+>
+> - ξ：第二项输入，ξ∈R<sup>m</sup>，白高斯噪音
+>
+> 两项输入联合起来，可以视为一个白高斯噪音输入，其均值在集合U中，但是是未知的.
+
+
+
+与其他表示系统的类不同，linProbSys类计算的是封闭的概率壳(Enclosing Probabilistic Hull EPH) ，即在部分参数不确定且没有概率分布时，一个能够包括所有可能概率分布的hull
+
+
+
+- linProbSys类使用的概率密度函数为：f<sub>X</sub>(x, r)，其含义为：”针对在时间t = r时，一个指定轨迹u(t)∈U的随机过程X(t)的概率密度函数“。
+- 所有可能的概率密度函数的EPH记作：$\overline{f}_X(x,r)$，其定义为：”{f<sub>X</sub>(x, r)|X(t)为对于t∈[0,r]时间区间内的一个解，u(t) ∈ U, f<sub>X</sub>(x, 0) = f0}“
+- [0,r]时间区间内的EPH定义为$\overline{f}_X(x,[0,r])$= sup{ $\overline{f}_X(x,t)$|t ∈ [0, r]}.
+
+> 本部分的原文较复杂，列出如下：
+>
+> ![](pics/linProbSys3.jpg)
+
+
+
+##### 示例
+
+```matlab
+% system matrices 
+A = [-1 -4; 4 -1]; 
+B = eye(2); 
+C = 0.7*eye(2);
+
+% linear system
+sys = linProbSys(’twoDimSys’,A,B,C);
+```
+
+![](pics/linProbSys2.jpg)
+
+
+
 #### 4.2.4.1 Operation reach
+
+对于线性概率系统的可达性分析与没有随机不确定性参数的线性系统类似，但区别是，本系统中，时间间隔的解必须由此前提到过的EPH封闭。
+
+
+
+Option部分提供的设置如下所示
+
+- .timeStep：时间步长，除了"adpt"外的其余所有算法都需要指定此项
+- .taylorTerms：矩阵指数e<sup>A∆t</sup>的计算中，泰勒项的个数，除了"adpt"外的其余所有算法都需要指定此项
+- .zonotopeOrder：zonotope阶数$\rho$的上界，除了"adpt"外的其余所有算法都需要指定此项
+- .reductionTechnique：指定减小zonotope阶数$\rho$的方法的项，默认值为"girard"
+- .gamma：指定正太分布置信集合大小的标量。在置信集合之外的概率不进行计算，而是加入”进入不安全集合“的概率值中
 
 
 
 ### 4.2.5 Nonlinear Systems
+
+
+
+
+
+
+
+
+
+
 
 #### 4.2.5.1 Operation reach
 
