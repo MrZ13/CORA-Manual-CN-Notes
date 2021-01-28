@@ -692,17 +692,143 @@ Option部分提供的设置如下所示
 
 ### 4.2.5 Nonlinear Systems
 
+> 尽管线性系统可以表示很大一部分的动态系统，但是非线性系统仍然具有重要的意义，因为它是表示更加复杂系统的基础。
 
 
 
+一般的非线性连续系统使用如下的微分方程表示：
+
+![](pics/nonlinearSys1.jpg)
+
+> x(t),u(t)的意义同上
+>
+> f为一个R<sup>n</sup>xR<sup>m</sup> -->R<sup>n</sup>的映射，且满足全局李普希兹连续
 
 
 
+在CORA中，非线性系统使用nonlinearSys类实现
 
+```
+sys = nonlinearSys(fun) 
+sys = nonlinearSys(name, fun) 
+sys = nonlinearSys(fun, n,m)
+sys = nonlinearSys(name, fun, n,m),
+```
+
+> name：系统的名字
+>
+> fun：MATLAB中用于定义4.2.5中微分方程的方法
+>
+> n：状态的个数
+>
+> m：输入的个数
+>
+> tips：若n,m没有显式地给出，则由方法fun设置
+
+
+
+##### 示例
+
+```matlab
+% differential equation f(x,u) 
+f = @(x,u) [x(2) + u +(1-x(1)ˆ2)*x(2)-x(1)];
+
+% nonlinear system
+sys = nonlinearSys(f);
+```
+
+![](pics/nonlinearSys2.jpg)
 
 
 
 #### 4.2.5.1 Operation reach
+
+对于非线性系统来说，可达性分析要更加复杂，因为在线性系统的相关计算中可以使用的很多有价值的特性不适用于非线性系统。
+
+> e.g.叠加态原则
+>
+> 叠加态原则允许将均匀的解和不均匀的解分开计算
+
+另一个线性系统的优势是，可达集合可以在没有不确定输入的情况下(有的话则不可行)使用线性映射进行计算，并且可以保证结果是封闭的。
+
+> e.g. 
+>
+> 对于ellipsoids,zonotopes,polytopes等集合表示，可以先进行一次线性变化后进行计算，然后将计算结果再转为这些集合表示
+
+在CORA中，非线性系统的可达性分析是基于状态空间抽象的。抽象的方式可以是：
+
+- 线性系统(linear system)
+- 多项式系统(polynomial system)
+
+需要注意的是，由于进行抽象会增加误差，因此将抽象误差以over-approximately的方式进行估计，并以额外的不确定输入加入，从而保证计算过程的over-approximately
+
+
+
+非线性系统可达集合的计算过程概览如下图所示
+
+(可达集合在连续的时间间隔 t ∈ τk = [k r, (k + 1)r] where k ∈ N+中，迭代地进行计算)
+
+![](pics/nonlinearSys3.jpg)
+
+
+
+==**计算过程的介绍如下：**==
+
+1. 非线性系统$\dot{x}(t)$进行抽象的方式有两种
+
+   - a.抽象为一个线性系统
+
+   - b.将向量 z = [x<sup>T</sup>, u^T^]^T^ 引入到一个从k阶的泰勒级数的计算中得到的多项式系统中去
+
+     ![](pics/nonlinearSys4.jpg)
+
+     其中，微分算符(Nabla Operator ,倒三角符号)的定义为
+
+     ![](pics/nonlinearSys5.jpg)
+
+     e~i~∈R^n+m^，是一个正交的单位向量。
+
+     抽象误差的集合L确保 f(x, u) ∈ f^abstract^(x, u) ⊕ L，从而保证能够以over-approximative计算可达集合
+
+2. 
+
+
+
+
+
+
+
+
+
+Options部分提供的设置如下所示：
+
+- .alg
+
+- .timeStep：时间步长，除了"adpt"外的其余所有算法都需要指定此项
+
+- .tensorOrder
+
+- .taylorTerms：矩阵指数e<sup>A∆t</sup>的计算中，泰勒项的个数，除了"adpt"外的其余所有算法都需要指定此项
+
+- .zonotopeOrder：zonotope阶数$\rho$的上界，除了"adpt"外的其余所有算法都需要指定此项
+
+- .reductionTechnique：指定减小zonotope阶数$\rho$的方法的项，默认值为"girard"
+
+- .errorOrder
+
+- .intermediateOrder：此算法的internal计算部分，zonotope阶数$\rho$的上界
+
+- .maxError
+
+- .reductionInterval
+
+- .lagrangeRem
+
+- polyZono
+
+  
+
+
 
 
 
