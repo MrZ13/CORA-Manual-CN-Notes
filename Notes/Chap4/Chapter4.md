@@ -790,9 +790,31 @@ sys = nonlinearSys(f);
 
      抽象误差的集合L确保 f(x, u) ∈ f^abstract^(x, u) ⊕ L，从而保证能够以over-approximative计算可达集合
 
-2. 
+2. 随后，需要满足的抽象误差集合$\overline{L}$以启发式的方式被计算出来
+
+3. 计算基于当前抽象结果的可达集合R^abstract^(tk)，需要满足$\dot{x}(t)$∈f^abstract^(x(t),u(t))⊕$\overline{L}$
+
+4. 抽象错误L根据当前计算得到的可达集合R^abstract^(tk)进行计算
+
+5. 判断是否满足L $\subseteq \overline{L}$，即判断误差是否可以接受。如果不满足，则说明需要对估计误差$\overline{L}$进行扩大。但如果多次扩大后，仍然无法满足要求，就需要进行可达集合的拆分。
+
+6. 如果L $\subseteq \overline{L}$这一条件被满足，则抽象误差达到接受标准，随后使用L这一更严格的抽象误差进行可达集合的计算：$\dot{x}(t)$∈f^abstract^(x(t),u(t))⊕L
+
+7. 下一步，就是进行下一轮的可达集合计算，以及去除重复的可达集合(能够被之前的可达集合覆盖的集合)，这一步的目的是减少下一步计算中需要被考虑的可达集合数量。
 
 
+
+**其他相关内容**
+
+- 在需要进行可达集合拆分时，工作区输出(workplace output)会使用关键词"spilt"进行标识
+- 由于非线性系统的可达集合是非凸的(non-convex)，因此可以获得更好的enclosure效果
+- 对于强非线性系统，作者推荐使用保守的多项式算法与多项Zonotopes结合的方法进行计算
+
+
+
+**非线性系统的可达性算法**
+
+![](pics/nonlinearSys6.jpg)
 
 
 
@@ -802,11 +824,11 @@ sys = nonlinearSys(f);
 
 Options部分提供的设置如下所示：
 
-- .alg
+- .alg：决定使用的可达性算法的字段
 
 - .timeStep：时间步长，除了"adpt"外的其余所有算法都需要指定此项
 
-- .tensorOrder
+- .tensorOrder：用于进行抽象的泰勒展开式(nonlinearSys4.jpg)的阶数k，常用的值为2或3
 
 - .taylorTerms：矩阵指数e<sup>A∆t</sup>的计算中，泰勒项的个数，除了"adpt"外的其余所有算法都需要指定此项
 
@@ -814,23 +836,19 @@ Options部分提供的设置如下所示：
 
 - .reductionTechnique：指定减小zonotope阶数$\rho$的方法的项，默认值为"girard"
 
-- .errorOrder
+- .errorOrder：在进行线性化误差(linearlization errors)之前，zonotope的阶数ρ的值需要被减少到errorOrder值。因为线性化误差的计算会使用到二次甚至三次的函数，从而显著提高generator的个数
 
 - .intermediateOrder：此算法的internal计算部分，zonotope阶数$\rho$的上界
 
-- .maxError
+- .maxError：此参数是一个R^n^维度的向量，为可接受的抽象误差L设置了一个上界，如果L超出了上界，则需要进行可达集合的拆分。此参数的默认值为∞，即不对可达集合进行拆分
 
-- .reductionInterval
+- .reductionInterval：为取消重复集合设置的time steps个数，超过此参数代表的值后，由于拆分集合造成的重复集合被取消
 
-- .lagrangeRem
+- .lagrangeRem：包含评估拉格朗日余项L的设置的结构
 
-- polyZono
+- polyZono：包含重新构建polyZono的设置的结构。==只有在选择'poly'作为可达性算法时==才需要设置
 
   
-
-
-
-
 
 ### 4.2.6 Nonlinear Systems with Uncertain Parameters
 
