@@ -852,17 +852,161 @@ Options部分提供的设置如下所示：
 
 ### 4.2.6 Nonlinear Systems with Uncertain Parameters
 
+非线性的参数系统在非线性的基础上加入了未知参数的考量
+
+![](pics/nonlinearParamSys1.jpg)
+
+> x(t),u(t)的意义同上，p∈R^p^，代表参数向量
+>
+> f：R^n^XR^m^XR^p^-->R^n^，并满足全局李普希兹连续这一条件
+>
+> 与有不确定参数的线性系统一样，不确定的参数p可以是一个常数向量，也可以随着时间不断变化
+
+
+
+CORA中，使用nonlinearParamSys类实现有不确定参数的非线性系统
+
+```
+sys = nonlinParamSys(fun) 
+sys = nonlinParamSys(fun, type) 
+sys = nonlinParamSys(name, fun) 
+sys = nonlinParamSys(name, fun, type) 
+sys = nonlinParamSys(fun, n,m, p) 
+sys = nonlinParamSys(fun, n,m, p, type) 
+sys = nonlinParamSys(name, fun, n,m, p)
+sys = nonlinParamSys(name, fun, n,m, p, type)
+```
+
+> name：系统名称
+>
+> fun：MATLAB中用于定义4.2.6中微分方程的方法
+>
+> n：状态的个数
+>
+> m：输入的个数
+>
+> p：参数的个数
+>
+> type：表明参数是否随时间变化
+>
+> - constParam：不随时间变化，默认值
+> - varParam：随时间变化
+>
+> tips：与4.2.2类似，如果n,m,p未给出，则将由fun函数自动指定
+
+
+
+##### 示例
+
+```matlab
+% differential equation f(x,u,p) 
+f = @(x,u,p) [x(2) + u + p*(1-x(1)ˆ2)*x(2)-x(1)];
+
+% nonlinear parametric system
+sys = nonlinParamSys(f);
+```
+
+![](pics/nonlinearParamSys2.jpg)
+
+
+
+> 除了本部分(4.2.6)介绍的处理不确定的常数参数的方法外，还有一种选择是:
+>
+> - 对于常数不确定参数，将其作为一个状态变量$\tilde{x}_i$，且trivial dynamics $\dot{\tilde{x}}=0$
+> - 对于随时间变化的不确定参数，将其作为不确定的输入
+>
+> 上述两种处理方法，均能达到使用非线性系统(Sec 4.2.5)计算含有不确定的参数情况的目的
+>
+> 但是，对于采用上述两种方法，还是采用4.2.6中介绍的带有不确定参数的非线性系统这一问题，目前尚无定论
+
+
+
 #### 4.2.6.1 Operation reach
+
+这一部分和4.2.5中的介绍几乎一致，唯一的不同是，对于使用保守的多项式算法(options.alg='poly')的情况，只能支持不确定参数是一个单点的情况，而不支持集合的情况。
 
 
 
 ### 4.2.7 Nonlinear Discrete-Time Systems
 
+本部分中介绍的是非线性离散时间系统，定义如下
+
+`x[i + 1] = f(x[i], u[i])`
+
+> x[i]∈R^n^,代表系统状态
+>
+> u[i]∈R^m^，代表系统输入
+>
+> f：R^n^ X R^m^ $\to$  R^n^，是一个连续的函数
+
+
+
+CORA中，使用nonlinearSysDT类实现非线性离散时间系统
+
+```
+sys = nonlinearSysDT(fun) 
+sys = nonlinearSysDT(name, fun) 
+sys = nonlinearSysDT(fun, n,m)
+sys = nonlinearSysDT(name, fun, n,m)
+```
+
+> name：系统的名称
+>
+> fun：处理微分方程f(x[i],u[i])的MATLAB方法
+>
+> n,m与4.2.6中的意义一致
+
+
+
+##### 示例
+
+```matlab
+% equation f(x,u) 
+f = @(x,u) [x(1) + u(1); ... 
+x(2) + u(2)*cos(x(1)); ... 
+x(3) + u(2)*sin(x(1))];
+
+% sampling time 
+dt = 0.25;
+
+% nonlinear discrete-time system
+sys = nonlinearSysDT(f,dt);
+```
+
+![](pics/nonlinearSysDT1.jpg)
+
+
+
 #### 4.2.7.1 Operation reach
 
+由于系统的发展是在离散之间中进行的，因此计算非线性离散系统的问题和计算非线性方程f(x[i], u[i])的image是一样的。
+
+与连续时间上的非线性系统类似，作者使用泰勒展开级数来对这个非线性方程进行抽象(注意此部分的表达式与4.2.5中表达式的区别)
+
+![](pics/nonlinearSysDT2.jpg)
+
+其中：
+
+-  z[i] = [x[i]^T^ u[i]^T^]^T^
+- Nabla操作符(倒三角)的含义与Sec4.2.5处一致
+- e~i~∈R^n+m^，是一个正交的单位向量
+- 抽象误差的集合L确保 f(x, u) ∈ f^abstract^(x[i], u[i]) ⊕ L，从而保证能够以over-approximative计算可达集合
 
 
-### 4.2.8 Nonlinear Differential-Algebraic Systems
+
+Options部分提供的设置如下所示：
+
+- .tensorOrder：用于进行抽象的泰勒展开式(nonlinearSys4.jpg)的阶数k，常用的值为2或3
+- .zonotopeOrder：zonotope阶数$\rho$的上界，除了"adpt"外的其余所有算法都需要指定此项
+- .reductionTechnique：指定减小zonotope阶数$\rho$的方法的项，默认值为"girard"
+- .errorOrder：在进行线性化误差(linearlization errors)之前，zonotope的阶数ρ的值需要被减少到errorOrder值。因为线性化误差的计算会使用到二次甚至三次的函数，从而显著提高generator的个数
+- .lagrangeRem：包含评估拉格朗日余项L的设置的结构
+
+
+
+### 4.2.8 Nonlinear Differential-Algebraic(微分代数) Systems
+
+
 
 #### 4.2.8.1 Operation reach
 
