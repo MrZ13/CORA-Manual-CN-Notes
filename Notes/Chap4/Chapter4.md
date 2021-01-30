@@ -1006,11 +1006,121 @@ Options部分提供的设置如下所示：
 
 ### 4.2.8 Nonlinear Differential-Algebraic(微分代数) Systems
 
+nonlinDASys类处理时间不变的(time-invariant)、半显式的(semi-explicit)、index-1的微分代数系统，其定义如下：
+
+![](pics/nonlinearDASys1.jpg)
+
+> x(t) ∈ R^n^，是微分变量的向量
+>
+> y(t) ∈ R^q^，是代数变量
+>
+> u(t) ∈ R^m^，是输入向量
+>
+> f：R^n^ X R^q^ X R^m^ $\to$ R^q^，g：R^n^ X R^q^ X R^m^ $\to$ R^q^，均为李普希兹连续的函数。其中f为微分方程，g为限制方程
+
+- 如果g(x(0), y(0), u(0)) = 0,则初始状态为一致的；而对于DAEs具有大于1的index时，则需要考虑隐含的代数限制[参考Sec 9.1]。
+
+- 对于隐式的DAEs，index-1属性能且仅能在满足如下约束的情况下保存
+
+  ![](pics/nonlinearDASys3.jpg)
+
+  - t：时间
+  - det：矩阵的行列式的值
+
+  e.g. 代数等式的Jacobian行列式是非奇异的
+
+- 大致来说，index通过指定一个解$\tilde{x}(t)$所需的一般形式的(0 = F( $\dot{\tilde{x}}$, $\tilde{x}$, u, t))时间微分的数量，来确定到一个index = 0 的ODE的距离
+
+> (本段说明较难理解，原文如下)
+>
+> ![](pics/nonlinearDASys4.jpg)
+
+
+
+CORA中的nonlinearDASys类实现了非线性微分代数系统，其使用方式如下
+
+```
+sys = nonlinDASys(dynFun, conFun) 
+sys = nonlinDASys(name, dynFun, conFun) 
+sys = nonlinDASys(dynFun, conFun, n,m, q)
+sys = nonlinDASys(name, dynFun, conFun, n,m, q)
+```
+
+> name：系统的名称
+>
+> dynfun：MATLAB中处理函数 f(x(t), y(t), u(t)) 的方法
+>
+> confun：MATLAB中处理函数 g(x(t), y(t), u(t)) 定义的方法
+>
+> n,m的意义同上
+>
+> q为代数限制的数量
+>
+> tips：如果n,m,q的数值未给出，则由dynfun和confun两个函数进行指定
+
+
+
+##### 示例
+
+```matlab
+% differential equation f(x,y,u) 
+f = @(x,y,u) x + 1 + u;
+
+% constraint equation g(x,y,u) 
+g = @(x,y,u) (x+1)*y + 2;
+
+% nonlinear differential-algebraic system
+sys = nonlinDASys(f,g);
+```
+
+![](pics/nonlinearDASys2.jpg)
+
+==tips==
+
+> 当前这类系统的具有不确定参数的情况对应的类没有被实现，但可以通过参考Sec4.2.7中介绍的方式(”状态变量或不确定输入“)，来处理这样的情况
+
 
 
 #### 4.2.8.1 Operation reach
 
+- 对于本部分中介绍的非线性微分代数系统，CORA使用[49]中介绍的算法计算可达集合。
+- 为了应用4.2.5.1中介绍的方法，上述算法对初始的非线性DAEs在每个连续的时间间隔tk中进行抽象，结果为线性微分inclusions。为了使超精度估计的误差最小化，需要使用一种不同的抽象方法。
+- 基于对函数f和g的线性化，可以将初始的非线性DAE动态系统抽象为一个线性的系统和额外的不确定性的和[49 Sec IV]。线性系统值包含动态状态变量x和不确定的输入u。
+- 代数状态y在后续的线性化限制函数g(x(t), y(t), u(t))中获得[49,Proposition2]。
 
+
+
+与普通的微分方程相反，微分代数系统的初始状态并不能直接被认为是一致的(consistent)。因此必须在使用时对初始代数状态是否是一致的进行判断，即体现为指定params.y0guess参数的值(Sec4.1中介绍)。基于这一判断，一致的初始代数状态由Newton Raphson方法找出。
+
+
+
+Options部分提供的设置如下所示：
+
+- .timeStep：时间步长，除了"adpt"外的其余所有算法都需要指定此项
+
+- .tensorOrder：用于进行抽象的泰勒展开式(nonlinearSys4.jpg)的阶数k，常用的值为2或3
+
+- .taylorTerms：矩阵指数e<sup>A∆t</sup>的计算中，泰勒项的个数，除了"adpt"外的其余所有算法都需要指定此项
+
+- .zonotopeOrder：zonotope阶数$\rho$的上界，除了"adpt"外的其余所有算法都需要指定此项
+
+- .reductionTechnique：指定减小zonotope阶数$\rho$的方法的项，默认值为"girard"
+
+- .errorOrder：在进行线性化误差(linearlization errors)之前，zonotope的阶数ρ的值需要被减少到errorOrder值。因为线性化误差的计算会使用到二次甚至三次的函数，从而显著提高generator的个数
+
+- .intermediateOrder：此算法的internal计算部分，zonotope阶数$\rho$的上界
+
+- .maxError_x：此参数是一个R^n^维度的向量，为动态系统等式f(x(t), y(t), u(t))可接受的抽象误差L设置了一个上界，如果L超出了上界，则需要进行可达集合的拆分。此参数的默认值为∞，即不对可达集合进行拆分
+
+- .maxError_y：此参数是一个R^n^维度的向量，为限制等式g(x(t), y(t), u(t))可接受的抽象误差L设置了一个上界，如果L超出了上界，则需要进行可达集合的拆分。此参数的默认值为∞，即不对可达集合进行拆分
+
+- .reductionInterval：为取消重复集合设置的time steps个数，超过此参数代表的值后，由于拆分集合造成的重复集合被取消
+
+- .lagrangeRem：包含评估拉格朗日余项L的设置的结构
+
+  
+
+  
 
 
 
