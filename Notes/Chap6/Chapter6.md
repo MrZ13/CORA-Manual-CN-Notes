@@ -142,27 +142,148 @@ han = plotOverTime(obj, dim, linespec, namevaluepairs)
 
 ### 6.1.5 query
 
+query方法返回reachSet对象的某一属性的值
+
+```
+val = query(obj, prop)
+```
+
+> - obj：reachSet类的对象
+> - prop：需要返回的具体属性
+>   - 'reachSet'：以cell数组的形式返回时间区间内的所有可达集合
+>   - 'reachSetTimePoint'：以cell数组的形式返回某一时间点的所有可达集合
+> - val：返回的值
+
 
 
 ## 6.2 Class simResult
 
+CORA中，模拟的结果以simResult类的对象的形式存储，而这个类提供了多种用于对模拟得出的轨迹进行可视化的方法。simResult类的一个实例可以以如下的方式进行构造
+
+```
+obj = simResult(x, t) 
+obj = simResult(x, t, loc)
+```
+
+> x：存储模拟结果轨迹的状态的cell数组
+>
+> t：存储模拟结果轨迹的时间点的cell数组
+>
+> loc：存储模拟结果轨迹的位置的索引的cell数组
+
+
+
 ### 6.2.1 add
+
+add方法将两个simResult类的实例进行相加
+
+```
+obj = add(obj1, obj2)
+```
 
 
 
 ### 6.2.2 plot
 
+plot方法将模拟结果轨迹进行二维投影，从而达到可视化的目的
+
+```
+han = plot(obj) 
+han = plot(obj, dim) 
+han = plot(obj, dim, linespec)
+han = plot(obj, dim, namevaluepairs)
+```
+
+> - obj：reachSet类的实例
+> - han：MATLAB图像对象的句柄
+> - dim：Integer类型的向量，满足dim ∈ $\N^2_\le n$，指明可达集合的哪两个维度被投影(default value: dim = [1 2])
+> - linespec：指定线段样式的字段，如’--*r’
+> - namevaluepairs：对线段的样式进行更多调整的字段
+>   - 除了matlab提供的name-value对，CORA还支持了'Filled'，'Order'等
+
 
 
 ### 6.2.3 plotOverTime
 
+plotOverTime方法实现了在时间的维度上进行模拟结果轨迹的一维投影，可以理解为是选择了时间作为一个维度的plot方法
 
+```
+han = plotOverTime(obj) 
+han = plotOverTime(obj, dim) 
+han = plotOverTime(obj, dim, linespec)
+han = plotOverTime(obj, dim, namevaluepairs)
+```
+
+> 参数意义和plot一致
 
 
 
 ## 6.3 Class specification
 
+> Specification类支持使用者对系统进行规格说明，系统必须遵守这种说明。如果提供了规格说明，则在可达性分析的过程中，一旦其被违反，分析过程立刻终止
+
+Specfication类的构造过程如下
+
+```
+obj = specification(S) 
+obj = specification(list) 
+obj = specification(S, type) 
+obj = specification(list, type)
+obj = specification(func, ’custom’)
+```
+
+> - S：定义规格说明的集合，是Sec2.2中介绍的集合类中的一个实例
+>
+> - list：存储定义规格说明的集合(复数)的cell数组，以便同时进行多个规格说明的限制
+>
+> - type：定义规格说明类型的String，可选项为’**unsafeSet**’, ’**safeSet**’, ’**invariant**’, 和’**custom**’.
+>
+>   将时间t时的可达集合记作R(t)，不同种类的规格说明意义如下：
+>
+>   - unSafeSet：∀t ∈ [t0, tf] : R(t) ∩ S = ∅
+>   - safeSet：∀t ∈ [t0, tf] : R(t) ⊆ S
+>   - invariant：∀t ∈ [t0, tf] : R(t) ∩ S 6= ∅
+>   - custom：∀t ∈ [t0, tf] : f(R(t)) = 1
+>
+>   注意，t~0~为可达集合计算的起始时间，对应的，t~f~即为可达集合计算的终止时间
+>
+> - func：指向方法f(R)的句柄，f(R)以当前时间间隔的可达集合R作为输入，返回值为1或0
+>
+>   - 1：当前的规格说明被满足
+>   - 0：当前的规格说明被违反
+
+
+
+也可以将不同的规格说明进行结合，需要使用add方法
+
+##### 示例
+
+```matlab
+% first specification 
+S = ellipsoid(diag([4,4])); 
+spec1 = specification(S,’safeSet’);
+
+% second specification 
+S = interval([1;1],[2.5;2.5]); 
+spec2 = specification(S,’unsafeSet’);
+
+% combination of both specifications
+spec = add(spec1,spec2);
+```
+
+![](pics/6.3add.jpg)
+
+
+
+
+
 ### 6.3.1 add
+
+add方法将两个规格说明进行相加
+
+```
+obj = add(obj1, obj2)
+```
 
 
 
